@@ -1,0 +1,57 @@
+version: "3.0"
+services:
+
+  master:
+    image: raft
+    container_name: masterraft
+    restart: always
+    networks:
+      - raft-net
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=masterraft:8008
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=masterraft:5432
+      - PATRONI_NAME=masterraft
+      - PATRONI_RAFT_SELF_ADDR=masterraft:5010
+      - PATRONI_RAFT_PARTNER_ADDRS=slaveraft1:5010,slaveraft2:5010
+
+  slaveraft1:
+    container_name: slaveraft1
+    image: raft
+    restart: always
+    networks:
+      - raft-net
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=slaveraft1:8008
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=slaveraft1:5432
+      - PATRONI_NAME=slaveraft1
+      - PATRONI_RAFT_SELF_ADDR=slaveraft1:5010
+      - PATRONI_RAFT_PARTNER_ADDRS=masterraft:5010,slaveraft2:5010
+
+  slaveraft2:
+    container_name: slaveraft2
+    image: raft
+    restart: always
+    networks:
+      - raft-net
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=slaveraft2:8008
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=slaveraft2:5432
+      - PATRONI_NAME=slaveraft2
+      - PATRONI_RAFT_SELF_ADDR=slaveraft2:5010
+      - PATRONI_RAFT_PARTNER_ADDRS=masterraft:5010,slaveraft1:5010
+
+  testraft:
+    container_name: testraft
+    image: raft
+    restart: always
+    networks:
+      - raft-net
+    environment:
+      - POSTGRES_PASSWORD=postgres
+
+networks:
+  raft-net:
+
